@@ -322,43 +322,46 @@ with caculation:
         st.write("Without Setup Fees:")
     with right_calculator:
         price_per_blank = float(price_per_blank)
-        st.write(
-            "$"
-            + "{:,}".format(
-                round(
-                    (
+        try:
+            st.write(
+                "$"
+                + "{:,}".format(
+                    round(
+                        (
+                            (
+                                price_per_blank
+                                + float(np.sum(price_list))
+                                + float(np.sum(option_price_list))
+                                + float(other_price_input1)
+                                + float(other_price_input2)
+                            )
+                            + (
+                                float(np.sum(setup_fee_price_list))
+                                * float(np.sum(input_values_colors))
+                                / quantity
+                            )
+                        ),
+                        2,
+                    )
+                )
+            )
+            st.write(
+                "$"
+                + "{:,}".format(
+                    round(
                         (
                             price_per_blank
-                            + float(np.sum(price_list))
-                            + float(np.sum(option_price_list))
-                            + float(other_price_input1)
-                            + float(other_price_input2)
-                        )
-                        + (
-                            float(np.sum(setup_fee_price_list))
-                            * float(np.sum(input_values_colors))
-                            / quantity
-                        )
-                    ),
-                    2,
+                            + np.sum(price_list)
+                            + np.sum(option_price_list)
+                            + other_price_input1
+                            + other_price_input2
+                        ),
+                        2,
+                    )
                 )
             )
-        )
-        st.write(
-            "$"
-            + "{:,}".format(
-                round(
-                    (
-                        price_per_blank
-                        + np.sum(price_list)
-                        + np.sum(option_price_list)
-                        + other_price_input1
-                        + other_price_input2
-                    ),
-                    2,
-                )
-            )
-        )
+        except:
+            st.write("")
     st.divider()
     st.write("**:red[Total Setup Fees]**")
     total_left_col, total_right_col = st.columns([3, 1.5])
