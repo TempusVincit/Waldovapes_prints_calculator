@@ -6,10 +6,10 @@ import random
 
 # read the database csv into multiple dataf
 quantity_pricing = pd.read_excel(
-    "עותק של VENDOR PRINT PRICING .xlsx", sheet_name="order_units"
+    "./עותק של VENDOR PRINT PRICING .xlsx", sheet_name="order_units"
 )
 production_pricing = pd.read_excel(
-    "עותק של VENDOR PRINT PRICING .xlsx", sheet_name="Production_Costs"
+    "./עותק של VENDOR PRINT PRICING .xlsx", sheet_name="Production_Costs"
 )
 st.set_page_config(layout="wide")
 main_column, caculation = st.columns([3, 1])
