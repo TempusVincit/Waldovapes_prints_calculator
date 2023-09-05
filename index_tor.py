@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import random
+from PIL import Image
+
+small_logo = Image.open("./logo-toi.png")
 
 
 # read the database csv into multiple dataf
@@ -11,12 +14,14 @@ quantity_pricing = pd.read_excel(
 production_pricing = pd.read_excel(
     "./עותק של VENDOR PRINT PRICING .xlsx", sheet_name="Production_Costs"
 )
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_icon=small_logo)
+
+
 main_column, caculation = st.columns([3, 1])
 
 with main_column:
     # Select Box for the three companies
-    st.subheader("Select the Company That you want to order from")
+    st.subheader(":label: Select the Company That you want to order from")
     select_company = st.selectbox(
         "**:red[Which Company you like to order from]**",
         ("HAPPY FACTORY", "MERCH PRODUCTION", "Empire Graphics"),
@@ -26,7 +31,7 @@ with main_column:
     quantity_pricing = quantity_pricing[quantity_pricing["vendor"] == select_company]
 
     # create an number input box for the quantity
-    st.subheader("Quantity")
+    st.subheader(":thermometer: Quantity")
     quantity = st.number_input("**:red[# Units To Order]**", step=1)
     st.markdown("---")
 
