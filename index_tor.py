@@ -3,7 +3,7 @@ import numpy as np
 import streamlit as st
 import random
 from PIL import Image
-import matplotlib.pyplot as plt
+
 
 
 small_logo = Image.open("./mp-logo.png")
