@@ -5,7 +5,6 @@ import random
 from PIL import Image
 
 
-
 small_logo = Image.open("./mp-logo.png")
 
 
@@ -109,7 +108,7 @@ with main_column:
     pdf_df = pdf_df._append(
         {
             "title": "Blanks",
-            "Quantity": quantity,
+            "quantity": quantity,
             "string": blank_string,
             "price": price_per_blank,
         },
@@ -509,7 +508,7 @@ with main_column:
     #############################################
     #############################################
     st.subheader(":page_with_curl: Note")
-    st.text_area(
+    notes = st.text_area(
         "a",
         placeholder="Simplicity is the ultimate sophistication.",
         label_visibility="hidden",
@@ -672,7 +671,7 @@ with caculation:
                 )
             )
         )
-st.dataframe(pdf_df)
+# st.dataframe(pdf_df)
 hide_streamlit_style = """
 <style>
 .row-widget.stCheckbox span{
@@ -748,6 +747,8 @@ def dataframe_to_html(df):
         <hr class="dashed">
          <div style="text-align: right; margin-right: 180px; margin-bottom: -20px;">Total:</div>
         <div style="font-size: 18px; font-weight: bold; text-align: right; margin-right: 50px;">{sum_amount} </div>
+        <hr>
+        {notes}
     </body>
     </html>
     """
