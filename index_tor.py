@@ -64,7 +64,7 @@ with main_column:
     ) = st.columns([1, 1, 0.5, 1.3, 0.6, 0.7])
     # a select box to choose the provider of the blanks
     with blanks_column1:
-        blanks_provider = st.selectbox("**:red[Source]**", ["Taste of Ink", "Client"])
+        blanks_provider = st.text_input("**:red[Blank]**", placeholder="Supplier Name")
     # an input box with the base cost per blank -- default 2.62
     with blanks_column2:
         base_cost = st.number_input("**:red[Base Cost Per Blank]**", value=2.62)
@@ -138,13 +138,14 @@ with main_column:
 
     for input_key in st.session_state.input_keys:
         (
+            location_name_col,
             color_col,
             oversized_col,
             speciality_col,
             m_Ink,
             Foil,
             remove_col,
-        ) = st.columns([2, 1, 1, 1, 1, 1])
+        ) = st.columns([1.5, 1, 1, 1, 1, 1, 0.5])
         with remove_col:
             st.subheader("")
 
@@ -157,6 +158,11 @@ with main_column:
             st.session_state.input_keys.remove(input_key)
 
         else:
+            with location_name_col:
+                location_name = st.text_input(
+                    "**:red[Name]**", placeholder="Location", key=f"name_{input_key}"
+                )
+
             with color_col:
                 num_colors = st.selectbox(
                     "**:red[Colors]**", list(range(0, 13)), key=input_key
@@ -205,7 +211,9 @@ with main_column:
             price_key = f"color_price_{input_key}"
             price_list.append(final_color_price)
             # price_1 = st.write("Price:", final_color_price, key=price_key)
-            location_string = "Colors : " + str(num_colors)
+            location_string = (
+                "Name : " + location_name + "\n Colors : " + str(num_colors)
+            )
 
             if ink_input:
                 location_string = location_string + "\n Speciality Ink"
@@ -253,9 +261,14 @@ with main_column:
         production_pricing_by_company_filtered.set_index("type")
     )
     for option in options_list:
-        title_col, radio_button_col, price_input_col, place_holder = st.columns(
-            [2, 2, 3, 2]
-        )
+        (
+            title_col,
+            radio_button_col,
+            price_input_col,
+            option_quantity,
+            place_holder,
+        ) = st.columns([2, 2, 2, 2, 1.5])
+
         with title_col:
             st.markdown("")
             html_str = f"""
@@ -278,18 +291,28 @@ with main_column:
                 label_visibility="hidden",
                 horizontal=True,
             )
+        with option_quantity:
+            if radio_option == "Yes":
+                option_quantity = st.number_input(
+                    label="**Quantity**",
+                    value=quantity,
+                    key=option + "_quantity",
+                    step=1,
+                )
+            else:
+                option_quantity = 0
         with price_input_col:
             if radio_option == "Yes":
                 option_price = production_pricing_by_company_indexed["price"].loc[
                     option
                 ]
                 option_price_input = st.number_input(
-                    "Price", value=option_price, key=option
+                    "**Price**", value=option_price, key=option
                 )
                 pdf_df = pdf_df._append(
                     {
                         "title": "Option",
-                        "quantity": quantity,
+                        "quantity": option_quantity,
                         "string": option,
                         "price": option_price_input,
                     },
@@ -300,9 +323,9 @@ with main_column:
         if option_price_list != 0:
             option_price_list.append(option_price_input)
 
-    st.caption(
-        "Section Total: $" + str(round(np.sum(option_price_list), 2)) + " / unit:"
-    )
+    # st.caption(
+    #     "Section Total: $" + str(round(np.sum(option_price_list), 2)) + " / unit:"
+    # )
     st.markdown("---")
 
     #################################################
@@ -318,9 +341,13 @@ with main_column:
         production_pricing_by_company_filtered.set_index("type")
     )
     for setup_fee in setup_fee_list:
-        title_col, radio_button_col, price_input_col, place_holder = st.columns(
-            [2, 2, 3, 2]
-        )
+        (
+            title_col,
+            radio_button_col,
+            price_input_col,
+            setup_fee_quantity,
+            place_holder,
+        ) = st.columns([2, 2, 2, 2, 1.5])
         with title_col:
             st.markdown("")
             html_str = f"""
@@ -343,18 +370,25 @@ with main_column:
                 label_visibility="hidden",
                 horizontal=True,
             )
+        with setup_fee_quantity:
+            if radio_option == "Yes":
+                setup_fee_quantity = st.number_input(
+                    label="**Quantity**", key=setup_fee + "_quantity", step=1
+                )
+            else:
+                option_quantity = 0
         with price_input_col:
             if radio_option == "Yes":
                 setup_fee_price = production_pricing_by_company_indexed["price"].loc[
                     setup_fee
                 ]
                 setup_fee_price_input = st.number_input(
-                    "Price", value=setup_fee_price, key=setup_fee
+                    "**Price**", value=setup_fee_price, key=setup_fee
                 )
                 pdf_df = pdf_df._append(
                     {
                         "title": "Setup Fee",
-                        "quantity": np.sum(input_values_colors),
+                        "quantity": setup_fee_quantity,
                         "string": setup_fee,
                         "price": setup_fee_price_input,
                     },
@@ -365,10 +399,13 @@ with main_column:
             if setup_fee_price_input != 0:
                 setup_fee_price_list.append(setup_fee_price_input)
 
-    st.caption(
-        "Section Total: $"
-        + str(round(np.sum(setup_fee_price_list), 2) * np.sum(input_values_colors))
+    # calculating the sum of the setup fees
+    setup_fee_sum = np.sum(
+        pdf_df["price"][pdf_df["title"] == "Setup Fee"]
+        * pdf_df["quantity"][pdf_df["title"] == "Setup Fee"]
     )
+
+    st.caption("Section Total: $" + str(round(setup_fee_sum, 2)))
     st.markdown("---")
 
     # ------------------------- create the misslenios per unit section--------------------------
@@ -497,13 +534,10 @@ with main_column:
             Miscellaneouses_amount.append(amount_input)
 
     st.caption(
-        "Section Total: $"
-        + str(round(np.sum(Miscellaneouses_amount), 2) * np.sum(input_values_colors))
-        + " :"
+        "Section Total: $" + str(round(np.sum(Miscellaneouses_amount), 2)) + " :"
     )
-    Miscellaneouses_amount_total = round(np.sum(Miscellaneouses_amount), 2) * np.sum(
-        input_values_colors
-    )
+    Miscellaneouses_amount_total = round(np.sum(Miscellaneouses_amount), 2)
+
     st.markdown("---")
     #############################################
     #############################################
@@ -515,36 +549,29 @@ with main_column:
     )
 
 
+# Convert the DataFrame to an HTML table
+pdf_df["string"] = pdf_df["string"].str.replace(
+    ",", "<br>"
+)  # Convert commas to HTML line breaks
+pdf_df["string"] = pdf_df["string"].str.replace("\n", "<br>")
+pdf_df = pdf_df[["title", "string", "quantity", "price"]]
+pdf_df = pdf_df.fillna(0)
+pdf_df["Amount"] = pdf_df["quantity"] * pdf_df["price"]
+sum_amount = "$" + str(np.sum(pdf_df["Amount"]))
+
 # ------------------------- side bar for totals: --------------------------
 with caculation:
     st.subheader(":clipboard: Totals:")
-    st.write("**:red[Cost Per Unit]**")
+    st.write("**:red[True Cost Per Unit]**")
     left_calculator, right_calculator = st.columns([3, 1.5])
     with left_calculator:
         st.write("All in Cost:")
-        st.write("Without Setup Fees:")
+
     with right_calculator:
         price_per_blank = float(price_per_blank)
         try:
-            all_in_cost = (
-                price_per_blank
-                + float(np.sum(price_list))
-                + float(np.sum(option_price_list))
-                + float(Miscellaneouses_per_unit_total)
-            ) + (
-                (
-                    float(np.sum(setup_fee_price_list))
-                    * float(np.sum(input_values_colors))
-                    + Miscellaneouses_amount_total
-                )
-                / quantity
-            )
-            all_in_cost_without_setup = (
-                price_per_blank
-                + np.sum(price_list)
-                + np.sum(option_price_list)
-                + Miscellaneouses_per_unit_total
-            )
+            all_in_cost = np.sum(pdf_df["Amount"]) / quantity
+
             st.write(
                 "$"
                 + "{:,}".format(
@@ -554,45 +581,17 @@ with caculation:
                     )
                 )
             )
-            st.write(
-                "$"
-                + "{:,}".format(
-                    round(
-                        all_in_cost_without_setup,
-                        2,
-                    )
-                )
-            )
+
         except:
             st.write("")
     st.divider()
-    st.write("**:red[Total Setup Fees]**")
-    total_left_col, total_right_col = st.columns([3, 1.5])
-    with total_left_col:
-        st.write("Total:")
-    with total_right_col:
-        st.write(
-            "$",
-            str(
-                (round(np.sum(setup_fee_price_list), 2) * np.sum(input_values_colors))
-                + Miscellaneouses_amount_total
-            ),
-        )
-    st.divider()
+
     st.write("**:red[Subtotal]**")
     subtotal_left_col, subtotal_right_col = st.columns([3, 1.5])
     with subtotal_left_col:
         st.write("Job Total:")
     with subtotal_right_col:
-        job_total = (
-            price_per_blank
-            + float(np.sum(price_list))
-            + float(np.sum(option_price_list))
-            + float(Miscellaneouses_per_unit_total)
-        ) * quantity + (
-            float(np.sum(setup_fee_price_list)) * float(np.sum(input_values_colors))
-            + Miscellaneouses_amount_total
-        )
+        job_total = np.sum(pdf_df["Amount"])
         st.write(
             "$"
             + "{:,}".format(
@@ -608,13 +607,12 @@ with caculation:
     recommendation_precentage = st.slider(
         "pricing recommendations", step=1, label_visibility="hidden", format="%d%%"
     )
-    st.write("**:red[Cost Per Unit]**")
+    st.write("**:red[Suggested Cost Per Unit w/ Margin]**")
     left_calculator, right_calculator = st.columns([3, 1.5])
     with left_calculator:
         st.write("All in Cost:")
-        st.write("Without Setup Fees:")
+
     with right_calculator:
-        price_per_blank = float(price_per_blank)
         try:
             st.write(
                 "$"
@@ -625,37 +623,10 @@ with caculation:
                     )
                 )
             )
-            st.write(
-                "$"
-                + "{:,}".format(
-                    round(
-                        all_in_cost_without_setup
-                        * (1 + recommendation_precentage / 100),
-                        2,
-                    )
-                )
-            )
+
         except:
             st.write("")
-    st.divider()
-    st.write("**:red[Total Setup Fees]**")
-    total_left_col, total_right_col = st.columns([3, 1.5])
-    with total_left_col:
-        st.write("Total:")
-    with total_right_col:
-        st.write(
-            "$",
-            str(
-                round(
-                    (
-                        np.sum(setup_fee_price_list) * np.sum(input_values_colors)
-                        + Miscellaneouses_amount_total
-                    )
-                    * (1 + recommendation_precentage / 100),
-                    2,
-                )
-            ),
-        )
+
     st.divider()
     st.write("**:red[Subtotal]**")
     subtotal_left_col, subtotal_right_col = st.columns([3, 1.5])
@@ -756,15 +727,6 @@ def dataframe_to_html(df):
     return html_content
 
 
-# Convert the DataFrame to an HTML table
-pdf_df["string"] = pdf_df["string"].str.replace(
-    ",", "<br>"
-)  # Convert commas to HTML line breaks
-pdf_df["string"] = pdf_df["string"].str.replace("\n", "<br>")
-pdf_df = pdf_df[["title", "string", "quantity", "price"]]
-pdf_df = pdf_df.fillna(0)
-pdf_df["Amount"] = pdf_df["quantity"] * pdf_df["price"]
-sum_amount = "$" + str(np.sum(pdf_df["Amount"]))
 pdf_df = pdf_df.rename(
     columns={
         "title": "Activity",
@@ -783,10 +745,6 @@ with caculation:
         data=html_content,
         file_name="Offer_Summary.html",
     )
-
-# Save the HTML content to a file
-# with open("sample_dataframe.html", "w") as file:
-#     file.write(html_content)
 
 
 hide_streamlit_style = """
