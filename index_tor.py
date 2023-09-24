@@ -5,7 +5,19 @@ import random
 from PIL import Image
 
 
-small_logo = Image.open("./mp-logo.png")
+def write_in_usd(number):
+    st.write(
+        "$"
+        + "{:,}".format(
+            round(
+                number,
+                2,
+            )
+        )
+    )
+
+
+small_logo = Image.open("./Absolute_merch_small.png")
 
 
 # read the database csv into multiple dataframe
@@ -67,7 +79,7 @@ with main_column:
         blanks_provider = st.text_input("**:red[Blank]**", placeholder="Supplier Name")
     # an input box with the base cost per blank -- default 2.62
     with blanks_column2:
-        base_cost = st.number_input("**:red[Base Cost Per Blank]**", value=2.62)
+        base_cost = st.number_input("**:red[Base Cost Per Blank]**", value=0.0)
 
     # a column dvided into 2 columns containg the % or $ select box and the mark up amount
 
@@ -78,7 +90,10 @@ with main_column:
 
     # a select box stating is the blank dyed or not
     with blanks_column5:
-        dyed = st.selectbox("**:red[Dyed?]**", ["Yes", "No"])
+        dyed = st.selectbox(
+            "**:red[Dyed?]**",
+            ["No", "Yes"],
+        )
     with blanks_column6:
         if dyed == "Yes":
             dyed_price = st.number_input("", value=4.5)
@@ -164,9 +179,14 @@ with main_column:
                 )
 
             with color_col:
-                num_colors = st.selectbox(
-                    "**:red[Colors]**", list(range(0, 13)), key=input_key
-                )
+                if select_company == "HAPPY FACTORY":
+                    num_colors = st.selectbox(
+                        "**:red[Colors]**", list(range(0, 13)), key=input_key
+                    )
+                else:
+                    num_colors = st.selectbox(
+                        "**:red[Colors]**", list(range(0, 18)), key=input_key
+                    )
             with oversized_col:
                 st.write("")
                 oversized_key = f"oversized_{input_key}"
@@ -198,6 +218,11 @@ with main_column:
                 st.write("")
                 foil_key = f"foil_{input_key}"
                 foil_input = st.checkbox("**:red[Foil]**", key=foil_key)
+                Fleece_key = f"Fleece Printing{input_key}"
+                Fleece_input = st.checkbox(
+                    "**:red[Fleece Printing]**",
+                    key=Fleece_key,
+                )
 
             input_values_colors.append(num_colors)
 
@@ -229,6 +254,8 @@ with main_column:
                 location_string = location_string + "\n Over Seam Printing"
             if mink_input:
                 location_string = location_string + "\n 3M Ink"
+            if Fleece_input:
+                location_string = location_string + "\n Fleece Printing"
 
             pdf_df = pdf_df._append(
                 {
@@ -410,7 +437,9 @@ with main_column:
 
     # ------------------------- create the misslenios per unit section--------------------------
     st.subheader(":diamond_shape_with_a_dot_inside: Miscellaneous Per Unit")
-    numbers, others_name, others_amount, remove_col = st.columns([0.5, 3, 3, 5])
+    numbers, others_name, others_amount, quantity_misc_col, remove_col = st.columns(
+        [0.5, 3, 3, 3, 2]
+    )
 
     if "Miscellaneous_per_unit" not in st.session_state:
         st.session_state.Miscellaneous_per_unit = []
@@ -426,7 +455,9 @@ with main_column:
     Miscellaneous_per_unit_rows_to_remove = []
 
     for Miscellaneous in st.session_state.Miscellaneous_per_unit:
-        numbers, others_name, others_amount, remove_col = st.columns([0.5, 3, 3, 5])
+        numbers, others_name, others_amount, quantity_misc_col, remove_col = st.columns(
+            [0.5, 3, 3, 3, 2]
+        )
         with remove_col:
             st.subheader("")
             delete_button_key = f"delete_button_{Miscellaneous}"
@@ -457,10 +488,15 @@ with main_column:
                     "**:red[Amount Per Unit]**",
                     key=amount_key,
                 )
+            with quantity_misc_col:
+                quantity_misc_key = f"quantiy_misc{Miscellaneous}"
+                quantity_misc_input = st.number_input(
+                    "**:red[Quantity]**", key=quantity_misc_key, step=1
+                )
             pdf_df = pdf_df._append(
                 {
                     "title": "Miscellaneous per unit",
-                    "quantity": quantity,
+                    "quantity": quantity_misc_input,
                     "string": name,
                     "price": amount_input,
                 },
@@ -494,7 +530,13 @@ with main_column:
     Miscellaneouses_rows_to_remove = []
 
     for Miscellaneous in st.session_state.Miscellaneouses:
-        numbers, others_name, others_amount, remove_col = st.columns([0.5, 3, 3, 5])
+        (
+            numbers,
+            others_name,
+            others_amount,
+            quantity_misc_section_col,
+            remove_col,
+        ) = st.columns([0.5, 3, 3, 3, 2])
         with remove_col:
             st.subheader("")
             delete_button_key = f"delete_button_{Miscellaneous}"
@@ -522,10 +564,15 @@ with main_column:
                     "**:red[Amount]**",
                     key=amount_key,
                 )
+            with quantity_misc_section_col:
+                quantity_misc_section_key = f"quantity_misc_section_misc{Miscellaneous}"
+                quantity_misc_section_input = st.number_input(
+                    "**:red[Quantity]**", key=quantity_misc_section_key, step=1
+                )
             pdf_df = pdf_df._append(
                 {
                     "title": "Miscellaneous",
-                    "quantity": np.sum(input_values_colors),
+                    "quantity": quantity_misc_section_input,
                     "string": name,
                     "price": amount_input,
                 },
@@ -566,12 +613,23 @@ with caculation:
     left_calculator, right_calculator = st.columns([3, 1.5])
     with left_calculator:
         st.write("All in Cost:")
+        st.write("Printing Subtotal:")
+        st.write("Setup Subtotal:")
 
     with right_calculator:
         price_per_blank = float(price_per_blank)
+        total_price_per_unit = np.sum(
+            pdf_df["Amount"][
+                pdf_df["title"].isin(
+                    ["Blanks", "Location", "Option", "Miscellaneous per unit"]
+                )
+            ]
+        )
+        total_setup_fee = np.sum(
+            pdf_df["Amount"][pdf_df["title"].isin(["Setup Fee", "Miscellaneous"])]
+        )
         try:
             all_in_cost = np.sum(pdf_df["Amount"]) / quantity
-
             st.write(
                 "$"
                 + "{:,}".format(
@@ -581,6 +639,8 @@ with caculation:
                     )
                 )
             )
+            write_in_usd(total_price_per_unit / quantity)
+            write_in_usd(total_setup_fee / quantity)
 
         except:
             st.write("")
@@ -590,6 +650,9 @@ with caculation:
     subtotal_left_col, subtotal_right_col = st.columns([3, 1.5])
     with subtotal_left_col:
         st.write("Job Total:")
+        st.write("Printing Total:")
+        st.write("Setup Total:")
+
     with subtotal_right_col:
         job_total = np.sum(pdf_df["Amount"])
         st.write(
@@ -601,6 +664,8 @@ with caculation:
                 )
             )
         )
+        write_in_usd(total_price_per_unit)
+        write_in_usd(total_setup_fee)
     ################## pricing recomendation ########################
     st.markdown("---")
     st.write(":clipboard: **:red[Pricing recommendations:]**")
@@ -611,6 +676,8 @@ with caculation:
     left_calculator, right_calculator = st.columns([3, 1.5])
     with left_calculator:
         st.write("All in Cost:")
+        st.write("Printing Subtotal:")
+        st.write("Setup Subtotal:")
 
     with right_calculator:
         try:
@@ -623,6 +690,13 @@ with caculation:
                     )
                 )
             )
+            write_in_usd(
+                (total_price_per_unit / quantity)
+                * (1 + recommendation_precentage / 100)
+            )
+            write_in_usd(
+                (total_setup_fee / quantity) * (1 + recommendation_precentage / 100)
+            )
 
         except:
             st.write("")
@@ -632,6 +706,8 @@ with caculation:
     subtotal_left_col, subtotal_right_col = st.columns([3, 1.5])
     with subtotal_left_col:
         st.write("Job Total:")
+        st.write("Printing Total:")
+        st.write("Setup Total:")
     with subtotal_right_col:
         st.write(
             "$"
@@ -642,6 +718,8 @@ with caculation:
                 )
             )
         )
+        write_in_usd((total_price_per_unit) * (1 + recommendation_precentage / 100))
+        write_in_usd((total_setup_fee) * (1 + recommendation_precentage / 100))
 # st.dataframe(pdf_df)
 hide_streamlit_style = """
 <style>
@@ -662,26 +740,24 @@ def dataframe_to_html(df):
     html_content = f"""
     <html>
     <head>
+    <img src="https://uc93e802551020c403cfb8095cba.previews.dropboxusercontent.com/p/thumb/ACCP3HbvWCdcIs6X-1ieEwl4FL0SXKhMqULwmlFZq1YdFGB1MweV1zt-W-YPw2Qt50VulraOBjFwoBWAmqJip0CncxjOy_w4vT-Em4_AqKpyhK7dUQToVZ_G9givmG75zk4tYm2rDc9RNqUeqM1sUe0l7HkFkssHb4c2gXcVR30j_EGhBog1-i3n5PxTmr2WtcmxVlPPJDiCOZGt16iGOlrjoiLkqeRUwAnL0lpbyUZmowNB-a6OCRbvTzYzOoQnrzJRnhQg74AcRmBAZeDaxgUKAMh6OZLWnoEPuZeyT14CGKoWuUUw9q2oxl7N_j3bi1Q7Ph9PiID_NXXBMEqiHneFjUXMAIZs9oOghJhluQggr_00ZtCKHAttNgZ0aEYLT3s/p.png" >
     <div><p style="display:inline-block; font-family: Arial, Helvetica, sans-serif; margin-left:50px;"> 
-    <b>Merch Productions Inc.</b> <br>
-            2340 N Glassell St <br>
-            Orange, CA 92865 <br>
-            trevor@merchpro.co <br>
-            www.merchproductions.com 
-            <img src="https://github.com/torhadas1/Waldovapes_prints_calculator/blob/main/mp-logo.png?raw=true" >    
+                
             </p> </div> <hr>
         <style>
             body {{
             width: 21cm;
             height: 29.7cm;
-            margin: 30mm 45mm 30mm 45mm;
+            margin: 30mm 45mm 10mm 45mm;
             font-family: Arial, Helvetica, sans-serif;
              }}
             img {{
-            float: right;
-            width:180px;
-            margin-left:330px;
-            margin-top:-100px}}
+            width: 19cm;
+            margin-top: -40px;
+            margin-bottom: -40px;
+
+
+ }}
             .table {{
                 border-collapse: collapse;
                 width: 800px;
