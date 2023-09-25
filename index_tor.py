@@ -271,7 +271,7 @@ with main_column:
     st.markdown("---")
     #######################################################
     #######################################################
-    st.subheader(":hammer_and_wrench: Options")
+    st.subheader(":hammer_and_wrench: Options Per Unit")
     option_price_list = []
     production_pricing["vendor"] = production_pricing["vendor"].str.rstrip()
     production_pricing_by_company = production_pricing[
@@ -357,7 +357,7 @@ with main_column:
 
     #################################################
     #################################################
-    st.subheader(":boat: Setup Fee")
+    st.subheader(":boat: Setup Fees")
     setup_fee_price_list = []
 
     production_pricing_by_company_filtered = production_pricing_by_company[
@@ -513,7 +513,7 @@ with main_column:
 
     st.markdown("---")
     # ------------------------- create the misslenios per unit section--------------------------
-    st.subheader(":sparkles: Miscellaneous ")
+    st.subheader(":sparkles: Miscellaneous Setup Fee")
     numbers, others_name, others_amount, remove_col = st.columns([0.5, 3, 3, 5])
 
     if "Miscellaneouses" not in st.session_state:
@@ -613,6 +613,7 @@ with caculation:
     left_calculator, right_calculator = st.columns([3, 1.5])
     with left_calculator:
         st.write("All in Cost:")
+        st.write("Blanks Subtotal:")
         st.write("Printing Subtotal:")
         st.write("Setup Subtotal:")
 
@@ -620,9 +621,7 @@ with caculation:
         price_per_blank = float(price_per_blank)
         total_price_per_unit = np.sum(
             pdf_df["Amount"][
-                pdf_df["title"].isin(
-                    ["Blanks", "Location", "Option", "Miscellaneous per unit"]
-                )
+                pdf_df["title"].isin(["Location", "Option", "Miscellaneous per unit"])
             ]
         )
         total_setup_fee = np.sum(
@@ -639,6 +638,7 @@ with caculation:
                     )
                 )
             )
+            write_in_usd(price_per_blank)
             write_in_usd(total_price_per_unit / quantity)
             write_in_usd(total_setup_fee / quantity)
 
@@ -650,6 +650,7 @@ with caculation:
     subtotal_left_col, subtotal_right_col = st.columns([3, 1.5])
     with subtotal_left_col:
         st.write("Job Total:")
+        st.write("Blanks Total:")
         st.write("Printing Total:")
         st.write("Setup Total:")
 
@@ -664,6 +665,7 @@ with caculation:
                 )
             )
         )
+        write_in_usd(price_per_blank * quantity)
         write_in_usd(total_price_per_unit)
         write_in_usd(total_setup_fee)
     ################## pricing recomendation ########################
@@ -676,6 +678,7 @@ with caculation:
     left_calculator, right_calculator = st.columns([3, 1.5])
     with left_calculator:
         st.write("All in Cost:")
+        st.write("Blanks Subtotal:")
         st.write("Printing Subtotal:")
         st.write("Setup Subtotal:")
 
@@ -690,6 +693,7 @@ with caculation:
                     )
                 )
             )
+            write_in_usd(price_per_blank * (1 + recommendation_precentage / 100))
             write_in_usd(
                 (total_price_per_unit / quantity)
                 * (1 + recommendation_precentage / 100)
@@ -706,6 +710,7 @@ with caculation:
     subtotal_left_col, subtotal_right_col = st.columns([3, 1.5])
     with subtotal_left_col:
         st.write("Job Total:")
+        st.write("Blanks Total:")
         st.write("Printing Total:")
         st.write("Setup Total:")
     with subtotal_right_col:
@@ -718,6 +723,7 @@ with caculation:
                 )
             )
         )
+        write_in_usd(price_per_blank * quantity * (1 + recommendation_precentage / 100))
         write_in_usd((total_price_per_unit) * (1 + recommendation_precentage / 100))
         write_in_usd((total_setup_fee) * (1 + recommendation_precentage / 100))
 # st.dataframe(pdf_df)
@@ -740,10 +746,8 @@ def dataframe_to_html(df):
     html_content = f"""
     <html>
     <head>
-    <img src="https://uc93e802551020c403cfb8095cba.previews.dropboxusercontent.com/p/thumb/ACCP3HbvWCdcIs6X-1ieEwl4FL0SXKhMqULwmlFZq1YdFGB1MweV1zt-W-YPw2Qt50VulraOBjFwoBWAmqJip0CncxjOy_w4vT-Em4_AqKpyhK7dUQToVZ_G9givmG75zk4tYm2rDc9RNqUeqM1sUe0l7HkFkssHb4c2gXcVR30j_EGhBog1-i3n5PxTmr2WtcmxVlPPJDiCOZGt16iGOlrjoiLkqeRUwAnL0lpbyUZmowNB-a6OCRbvTzYzOoQnrzJRnhQg74AcRmBAZeDaxgUKAMh6OZLWnoEPuZeyT14CGKoWuUUw9q2oxl7N_j3bi1Q7Ph9PiID_NXXBMEqiHneFjUXMAIZs9oOghJhluQggr_00ZtCKHAttNgZ0aEYLT3s/p.png" >
-    <div><p style="display:inline-block; font-family: Arial, Helvetica, sans-serif; margin-left:50px;"> 
-                
-            </p> </div> <hr>
+    <img src="https://i.ibb.co/YBRqfgh/Absolute-merch.png">
+    <div><p style="display:inline-block; font-family: Arial, Helvetica, sans-serif; margin-left:50px;"></p> </div> <hr>
         <style>
             body {{
             width: 21cm;
@@ -792,8 +796,7 @@ def dataframe_to_html(df):
     <body>
         {html_table}
         <hr class="dashed">
-         <div style="text-align: right; margin-right: 180px; margin-bottom: -20px;">Total:</div>
-        <div style="font-size: 18px; font-weight: bold; text-align: right; margin-right: 50px;">{sum_amount} </div>
+         <div style="text-align: right; margin-right: 100px; font-size: 18px; font-weight: bold;">Total:       {sum_amount} </div>
         <hr>
         {notes}
     </body>
@@ -832,3 +835,6 @@ hide_streamlit_style = """
 
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+
+# <div style="font-size: 18px; font-weight: bold; text-align: right; margin-right: 50px;">
