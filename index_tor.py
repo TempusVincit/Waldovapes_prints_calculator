@@ -571,7 +571,7 @@ with main_column:
                 )
             pdf_df = pdf_df._append(
                 {
-                    "title": "Miscellaneous",
+                    "title": "Miscellaneous Setup Fee",
                     "quantity": quantity_misc_section_input,
                     "string": name,
                     "price": amount_input,
@@ -625,7 +625,7 @@ with caculation:
             ]
         )
         total_setup_fee = np.sum(
-            pdf_df["Amount"][pdf_df["title"].isin(["Setup Fee", "Miscellaneous"])]
+            pdf_df["Amount"][pdf_df["title"].isin(["Setup Fee", "Miscellaneous Setup Fee"])]
         )
         try:
             all_in_cost = np.sum(pdf_df["Amount"]) / quantity
