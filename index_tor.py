@@ -34,20 +34,20 @@ main_column, caculation = st.columns([3, 1])
 
 # create the prices quates df
 pdf_df = pd.DataFrame(columns=["title", "price", "quantity", "string"])
-
+quantity_pricing["vendor"] = quantity_pricing["vendor"].str.rstrip()
+vendor_list = quantity_pricing["vendor"].drop_duplicates().to_list()
 with main_column:
     # Select Box for the three companies
     st.subheader(":label: Select the Company That you want to order from")
     select_company = st.selectbox(
         "**:red[Which Company you like to order from]**",
-        ("HAPPY FACTORY", "MERCH PRODUCTION", "Empire Graphics"),
+        vendor_list,
     )
     pdf_df = pdf_df._append(
         {"title": "Company", "string": select_company}, ignore_index="True"
     )
 
     st.markdown("---")
-    quantity_pricing["vendor"] = quantity_pricing["vendor"].str.rstrip()
     quantity_pricing = quantity_pricing[quantity_pricing["vendor"] == select_company]
 
     # create an number input box for the quantity
@@ -625,7 +625,9 @@ with caculation:
             ]
         )
         total_setup_fee = np.sum(
-            pdf_df["Amount"][pdf_df["title"].isin(["Setup Fee", "Miscellaneous Setup Fee"])]
+            pdf_df["Amount"][
+                pdf_df["title"].isin(["Setup Fee", "Miscellaneous Setup Fee"])
+            ]
         )
         try:
             all_in_cost = np.sum(pdf_df["Amount"]) / quantity
