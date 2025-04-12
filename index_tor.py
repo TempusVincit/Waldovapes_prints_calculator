@@ -4,6 +4,13 @@ import streamlit as st
 import random
 from PIL import Image
 
+if "edit_mode" not in st.session_state:
+    st.session_state.edit_mode = False
+if "edited_order_units" not in st.session_state:
+    st.session_state.edited_order_units = None
+if "edited_production_costs" not in st.session_state:
+    st.session_state.edited_production_costs = None
+
 
 def write_in_usd(number):
     st.write(
@@ -18,16 +25,71 @@ def write_in_usd(number):
 
 
 small_logo = Image.open("./Absolute_merch_small.png")
+st.set_page_config(layout="wide", page_icon=small_logo)
+st.markdown("## :gear: Admin Tools")
+
+if not st.session_state.edit_mode:
+    if st.button("EDIT INDEX"):
+        st.session_state.edit_mode = True
+        st.session_state.edited_order_units = pd.read_excel(
+            "./VENDOR PRINT PRICING.xlsx", sheet_name="order_units"
+        )
+        st.session_state.edited_production_costs = pd.read_excel(
+            "./VENDOR PRINT PRICING.xlsx", sheet_name="Production_Costs"
+        )
+        
+else:
+    st.subheader(":page_with_curl: Edit `order_units` Sheet")
+    st.session_state.edited_order_units = st.data_editor(
+        st.session_state.edited_order_units,
+        use_container_width=True,
+        num_rows="dynamic",
+        key="edit_order_units",
+    )
+
+    st.subheader(":page_with_curl: Edit `Production_Costs` Sheet")
+    st.session_state.edited_production_costs = st.data_editor(
+        st.session_state.edited_production_costs,
+        use_container_width=True,
+        num_rows="dynamic",
+        key="edit_production_costs",
+    )
+    # 🔧 Clean and convert 'price' column to float, replacing "QUOTE" with 0
+if st.session_state.edited_production_costs is not None and "price" in st.session_state.edited_production_costs.columns:
+    st.session_state.edited_production_costs["price"] = (
+        st.session_state.edited_production_costs["price"]
+        .replace("QUOTE", 0)
+        .astype(float)
+    )
+
+if st.button("SAVE CHANGES"):
+        with pd.ExcelWriter(
+            "./VENDOR PRINT PRICING.xlsx", engine="openpyxl", mode="a", if_sheet_exists="replace"
+        ) as writer:
+            st.session_state.edited_order_units.to_excel(writer, sheet_name="order_units", index=False)
+            st.session_state.edited_production_costs.to_excel(writer, sheet_name="Production_Costs", index=False)
+        st.success("Changes saved!")
+        st.session_state.edit_mode = False
+        
+
+
 
 
 # read the database csv into multiple dataframe
-quantity_pricing = pd.read_excel(
-    "./VENDOR PRINT PRICING.xlsx", sheet_name="order_units"
-)
-production_pricing = pd.read_excel(
-    "./VENDOR PRINT PRICING.xlsx", sheet_name="Production_Costs"
-)
-st.set_page_config(layout="wide", page_icon=small_logo)
+import openpyxl
+
+if not st.session_state.edit_mode:
+    quantity_pricing = pd.read_excel(
+        "./VENDOR PRINT PRICING.xlsx", sheet_name="order_units"
+    )
+    production_pricing = pd.read_excel(
+        "./VENDOR PRINT PRICING.xlsx", sheet_name="Production_Costs"
+    )
+else:
+    quantity_pricing = st.session_state.edited_order_units
+    production_pricing = st.session_state.edited_production_costs
+
+
 
 
 main_column, caculation = st.columns([3, 1])
@@ -40,11 +102,11 @@ with main_column:
     # Select Box for the three companies
     st.subheader(":label: Select the Company That you want to order from")
     select_company = st.selectbox(
-        "**:red[Which Company you like to order from]**",
+        "**:red[Which Drug Dealer would you like to order from]**",
         vendor_list,
     )
     pdf_df = pdf_df._append(
-        {"title": "Company", "string": select_company}, ignore_index="True"
+        {"title": "Drug Dealer", "string": select_company}, ignore_index="True"
     )
 
     st.markdown("---")
