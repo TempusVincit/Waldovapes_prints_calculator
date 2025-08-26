@@ -100,9 +100,9 @@ quantity_pricing["vendor"] = quantity_pricing["vendor"].str.rstrip()
 vendor_list = quantity_pricing["vendor"].drop_duplicates().to_list()
 with main_column:
     # Select Box for the three companies
-    st.subheader(":label: Select the Company That you want to order from")
+    st.subheader(":label: Select the Vendor That you want to order from")
     select_company = st.selectbox(
-        "**:red[Which Company would you like to order from]**",
+        "**:red[Which Vendor would you like to order from]**",
         vendor_list,
     )
     pdf_df = pdf_df._append(
@@ -902,3 +902,4 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 # <div style="font-size: 18px; font-weight: bold; text-align: right; margin-right: 50px;">
+
