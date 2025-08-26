@@ -102,11 +102,11 @@ with main_column:
     # Select Box for the three companies
     st.subheader(":label: Select the Company That you want to order from")
     select_company = st.selectbox(
-        "**:red[Which Drug Dealer would you like to order from]**",
+        "**:red[Which Company would you like to order from]**",
         vendor_list,
     )
     pdf_df = pdf_df._append(
-        {"title": "Drug Dealer", "string": select_company}, ignore_index="True"
+        {"title": "Company", "string": select_company}, ignore_index="True"
     )
 
     st.markdown("---")
@@ -126,7 +126,7 @@ with main_column:
     ]
 
     # create an section for the blanks price per unit
-    st.subheader(":shirt: Blanks")
+    st.subheader("Blanks")
     # creating 4 columns one for each parameter
     (
         blanks_column1,
@@ -196,7 +196,7 @@ with main_column:
     #################################
     ################################# new section
     # create the print locations section
-    st.subheader(":lower_left_paintbrush: Print Locations")
+    st.subheader("Print Locations")
     color_col, oversized_col, speciality_col, remove_col = st.columns(4)
 
     if "input_keys" not in st.session_state:
@@ -419,7 +419,7 @@ with main_column:
 
     #################################################
     #################################################
-    st.subheader(":boat: Setup Fees")
+    st.subheader("Setup Fees")
     setup_fee_price_list = []
 
     production_pricing_by_company_filtered = production_pricing_by_company[
@@ -884,7 +884,7 @@ html_content = dataframe_to_html(pdf_df)
 with caculation:
     st.markdown("---")
     st.download_button(
-        "Download Summary",
+        "Download Quote",
         data=html_content,
         file_name="Offer_Summary.html",
     )
