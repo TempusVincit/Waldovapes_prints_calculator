@@ -145,10 +145,30 @@ with main_column:
 
     # a column dvided into 2 columns containg the % or $ select box and the mark up amount
 
-    with blanks_column3:
-        select_box_blanks_precent_or_dollar = st.selectbox("", ("$", "%"))
-    with blanks_column4:
-        blank_markup = st.number_input("**:red[Markup Amount]**")
+   # with blanks_column3:
+    #    select_box_blanks_precent_or_dollar = st.selectbox("", ("$", "%"))
+   # with blanks_column4:
+   #    blank_markup = st.number_input("**:red[Markup Amount]**")
+
+
+with blanks_column3:
+    select_box_blanks_precent_or_dollar = st.selectbox(
+        "",
+        options=["$"],
+        index=0,
+        disabled=True,
+        key="blanks_currency_type"
+    )
+
+with blanks_column4:
+    blank_markup = st.number_input(
+        "**:red[Markup Amount]**",
+        value=0.20,
+        disabled=True,
+        key="blanks_markup_amount"
+    )
+
+
 
     # a select box stating is the blank dyed or not
     with blanks_column5:
@@ -902,4 +922,5 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 # <div style="font-size: 18px; font-weight: bold; text-align: right; margin-right: 50px;">
+
 
