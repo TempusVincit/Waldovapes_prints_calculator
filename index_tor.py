@@ -163,8 +163,9 @@ with blanks_column3:
 with blanks_column4:
     blank_markup = st.number_input(
         "**:red[Markup Amount]**",
-        value=0.20,
-        disabled=True,
+        value=0.20,     # default
+        step=0.01,      # optional: nice increments
+        min_value=0.0,  # optional: prevent negatives
         key="blanks_markup_amount"
     )
 
@@ -922,5 +923,6 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 # <div style="font-size: 18px; font-weight: bold; text-align: right; margin-right: 50px;">
+
 
 
